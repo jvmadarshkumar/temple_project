@@ -38,8 +38,8 @@ export default function DashboardPage() {
   return (
     <div style={{ paddingTop: '2rem' }}>
       <div className="glass-panel mb-4 flex justify-between align-center">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <img src="/ganesha-logo.png" alt="Ganesha Logo" width={40} height={40} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <img src="/ganesha-logo.png" alt="Ganesha Logo" width={80} height={80} />
           <h2 style={{ margin: 0 }}>Temple Finance Tracker</h2>
         </div>
         <div className="flex align-center gap-4">
