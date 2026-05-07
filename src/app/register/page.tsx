@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Landmark, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
+import TempleLogo from '@/components/TempleLogo';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
@@ -77,7 +78,7 @@ export default function RegisterPage() {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <div className="glass-panel" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="text-center mb-4">
-          <Landmark size={48} color="var(--accent-color)" style={{ margin: '0 auto', marginBottom: '1rem' }} />
+          <TempleLogo size={48} color="var(--accent-color)" style={{ margin: '0 auto', marginBottom: '1rem' }} />
           <h2>Request Access</h2>
           <p>Register for Temple Finance Tracker</p>
         </div>
