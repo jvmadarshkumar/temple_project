@@ -298,89 +298,93 @@ export default function AdminDashboard() {
         <div className="glass-panel">
           <div className="mb-4">
             <h3>Pending Approvals</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.filter(u => u.status === 'pending').map(u => (
-                  <tr key={u._id}>
-                    <td>{u.name}</td>
-                    <td>{u.email}</td>
-                    <td>{u.phoneNumber}</td>
-                    <td>
-                      <div className="flex gap-4">
-                        <button className="btn btn-success" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleUpdateStatus(u._id, 'approved')}>
-                          Approve
-                        </button>
-                        <button className="btn btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleUpdateStatus(u._id, 'rejected')}>
-                          Reject
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {users.filter(u => u.status === 'pending').length === 0 && (
+            <div className="table-wrapper">
+              <table>
+                <thead>
                   <tr>
-                    <td colSpan={4} className="text-center">No pending users.</td>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.filter(u => u.status === 'pending').map(u => (
+                    <tr key={u._id}>
+                      <td>{u.name}</td>
+                      <td>{u.email}</td>
+                      <td>{u.phoneNumber}</td>
+                      <td>
+                        <div className="flex gap-4">
+                          <button className="btn btn-success" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleUpdateStatus(u._id, 'approved')}>
+                            Approve
+                          </button>
+                          <button className="btn btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleUpdateStatus(u._id, 'rejected')}>
+                            Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {users.filter(u => u.status === 'pending').length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="text-center">No pending users.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div className="mt-4">
             <h3>Approved Users Management</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Password</th>
-                  <th>Permissions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.filter(u => u.status === 'approved').map(u => (
-                  <tr key={u._id}>
-                    <td>{u.name}</td>
-                    <td>{u.email}</td>
-                    <td>{u.role.toUpperCase()}</td>
-                    <td style={{ fontFamily: 'monospace', letterSpacing: '1px', color: 'var(--accent-color)' }}>
-                      {u.password || 'N/A'}
-                    </td>
-                    <td>
-                      {u.role !== 'admin' && (
-                        <div className="flex flex-col-mobile gap-4">
-                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                            <input 
-                              type="checkbox" 
-                              checked={u.isDisabled || false} 
-                              onChange={(e) => handleTogglePermission(u._id, 'isDisabled', e.target.checked)} 
-                            />
-                            Disable User
-                          </label>
-                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                            <input 
-                              type="checkbox" 
-                              checked={u.canAddTransactions || false} 
-                              onChange={(e) => handleTogglePermission(u._id, 'canAddTransactions', e.target.checked)} 
-                            />
-                            Allow Add Tx
-                          </label>
-                        </div>
-                      )}
-                    </td>
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Password</th>
+                    <th>Permissions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.filter(u => u.status === 'approved').map(u => (
+                    <tr key={u._id}>
+                      <td>{u.name}</td>
+                      <td>{u.email}</td>
+                      <td>{u.role.toUpperCase()}</td>
+                      <td style={{ fontFamily: 'monospace', letterSpacing: '1px', color: 'var(--accent-color)' }}>
+                        {u.password || 'N/A'}
+                      </td>
+                      <td>
+                        {u.role !== 'admin' && (
+                          <div className="flex flex-col-mobile gap-4">
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={u.isDisabled || false} 
+                                onChange={(e) => handleTogglePermission(u._id, 'isDisabled', e.target.checked)} 
+                              />
+                              Disable User
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={u.canAddTransactions || false} 
+                                onChange={(e) => handleTogglePermission(u._id, 'canAddTransactions', e.target.checked)} 
+                              />
+                              Allow Add Tx
+                            </label>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
