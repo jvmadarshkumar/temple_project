@@ -4,19 +4,20 @@ import dbConnect from '@/lib/mongodb';
 import Transaction from '@/models/Transaction';
 
 // PUT update transaction (Admin only)
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const tokenPayload = getUserFromRequest(request);
     if (!tokenPayload || (tokenPayload as any).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     
     await dbConnect();
     
     const updatedTransaction = await Transaction.findByIdAndUpdate(
-      params.id,
+      id,
       { $set: body },
       { new: true }
     );
@@ -32,16 +33,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE transaction (Admin only)
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const tokenPayload = getUserFromRequest(request);
     if (!tokenPayload || (tokenPayload as any).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
     }
 
+    const { id } = await params;
+
     await dbConnect();
     
-    const deletedTransaction = await Transaction.findByIdAndDelete(params.id);
+    const deletedTransaction = await Transaction.findByIdAndDelete(id);
     
     if (!deletedTransaction) {
       return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });

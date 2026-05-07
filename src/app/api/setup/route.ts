@@ -2,14 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
-    const { name, email, phoneNumber, password } = await request.json();
-    
-    if (!name || !email || !password || !phoneNumber) {
-      return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
-    }
-
     await dbConnect();
     
     // Check if any user exists
@@ -18,17 +12,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Setup already completed. Users exist in the database.' }, { status: 403 });
     }
 
+    const adminEmail = process.env.ADMIN_EMAIL || 'adminadarshkumar@gmail.com';
+
     // Create the first admin
     const adminUser = await User.create({
-      name,
-      email,
-      phoneNumber,
-      password,
+      name: 'Temple Admin',
+      email: adminEmail,
+      phoneNumber: '0000000000',
+      password: 'admin',
       role: 'admin',
       status: 'approved'
     });
 
-    return NextResponse.json({ message: 'Admin account created successfully!', user: adminUser });
+    return NextResponse.json({ 
+      message: 'Admin account created successfully! You can now log in.', 
+      email: adminEmail,
+      password: 'admin' 
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

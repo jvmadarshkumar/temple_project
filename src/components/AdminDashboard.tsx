@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import ExportModal from './ExportModal';
 import { downloadTransactionsAsExcel } from '@/lib/export';
 
 export default function AdminDashboard() {
@@ -8,6 +9,9 @@ export default function AdminDashboard() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Export filters
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Form states
   const [showAddModal, setShowAddModal] = useState(false);
@@ -88,6 +92,21 @@ export default function AdminDashboard() {
   const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
   const netBalance = totalIncome - totalExpense;
 
+  const currentYear = new Date().getFullYear().toString();
+
+  const groupedTransactions = transactions.reduce((acc, t) => {
+    const date = new Date(t.date);
+    const year = date.getFullYear().toString();
+    const month = date.toLocaleString('default', { month: 'long' });
+    if (!acc[year]) acc[year] = {};
+    if (!acc[year][month]) acc[year][month] = [];
+    acc[year][month].push(t);
+    return acc;
+  }, {} as Record<string, Record<string, any[]>>);
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const sortMonths = (a: string, b: string) => monthNames.indexOf(b) - monthNames.indexOf(a);
+
   if (loading && transactions.length === 0) return <div>Loading Admin Dashboard...</div>;
 
   return (
@@ -129,8 +148,8 @@ export default function AdminDashboard() {
           <div className="glass-panel">
             <div className="flex justify-between align-center mb-4">
               <h3>Transactions</h3>
-              <div className="flex gap-4">
-                <button className="btn btn-secondary" onClick={() => downloadTransactionsAsExcel(transactions)}>
+              <div className="flex gap-4 align-center">
+                <button className="btn btn-secondary" onClick={() => setShowExportModal(true)}>
                   Export Excel
                 </button>
                 <button className="btn btn-primary" onClick={() => setShowAddModal(!showAddModal)}>
@@ -138,6 +157,10 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
+
+            {showExportModal && (
+              <ExportModal transactions={transactions} onClose={() => setShowExportModal(false)} />
+            )}
 
             {showAddModal && (
               <form onSubmit={handleAddTransaction} className="mb-4" style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
@@ -172,46 +195,88 @@ export default function AdminDashboard() {
               </form>
             )}
             
-            <div style={{ overflowX: 'auto' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((t) => (
-                    <tr key={t._id}>
-                      <td>{new Date(t.date).toLocaleDateString()}</td>
-                      <td>
-                        <span className={`text-${t.type === 'income' ? 'success' : 'danger'}`}>
-                          {t.type.toUpperCase()}
-                        </span>
-                      </td>
-                      <td>{t.category}</td>
-                      <td>{t.description}</td>
-                      <td className={`text-${t.type === 'income' ? 'success' : 'danger'}`}>
-                        ₹{t.amount.toLocaleString()}
-                      </td>
-                      <td>
-                        <button className="btn btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleDeleteTransaction(t._id)}>
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {transactions.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="text-center" style={{ padding: '2rem' }}>No transactions found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+            <div>
+              {Object.keys(groupedTransactions).sort((a, b) => Number(b) - Number(a)).map(year => {
+                const monthsObj = groupedTransactions[year];
+                const sortedMonths = Object.keys(monthsObj).sort(sortMonths);
+                
+                const renderMonth = (month: string, isOpen: boolean) => {
+                  const groupTxs = monthsObj[month];
+                  const groupIncome = groupTxs.filter((t: any) => t.type === 'income').reduce((sum: number, t: any) => sum + t.amount, 0);
+                  const groupExpense = groupTxs.filter((t: any) => t.type === 'expense').reduce((sum: number, t: any) => sum + t.amount, 0);
+                  const groupNet = groupIncome - groupExpense;
+
+                  return (
+                    <details key={month} open={isOpen} className="mb-4" style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <summary style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', padding: '0.5rem', outline: 'none' }}>
+                        {month} <span style={{ fontSize: '0.9rem', fontWeight: 'normal', opacity: 0.8, marginLeft: '1rem' }}>(Net Balance: ₹{groupNet.toLocaleString()})</span>
+                      </summary>
+                      <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Type</th>
+                              <th>Category</th>
+                              <th>Description</th>
+                              <th>Amount</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {groupTxs.map((t: any) => (
+                              <tr key={t._id}>
+                                <td>{new Date(t.date).toLocaleDateString()}</td>
+                                <td>
+                                  <span className={`text-${t.type === 'income' ? 'success' : 'danger'}`}>
+                                    {t.type.toUpperCase()}
+                                  </span>
+                                </td>
+                                <td>{t.category}</td>
+                                <td>{t.description}</td>
+                                <td className={`text-${t.type === 'income' ? 'success' : 'danger'}`}>
+                                  ₹{t.amount.toLocaleString()}
+                                </td>
+                                <td>
+                                  <button className="btn btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleDeleteTransaction(t._id)}>
+                                    Delete
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </details>
+                  );
+                };
+
+                if (year === currentYear) {
+                  return sortedMonths.map((month, index) => renderMonth(month, index === 0));
+                } else {
+                  let yearIncome = 0;
+                  let yearExpense = 0;
+                  Object.values(monthsObj).flat().forEach((t: any) => {
+                    if (t.type === 'income') yearIncome += t.amount;
+                    else yearExpense += t.amount;
+                  });
+                  const yearNet = yearIncome - yearExpense;
+
+                  return (
+                    <details key={year} className="mb-4" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '0.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <summary style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', padding: '0.5rem', outline: 'none', color: 'var(--accent-color)' }}>
+                        {year} <span style={{ fontSize: '1rem', fontWeight: 'normal', color: 'white', marginLeft: '1rem' }}>(Net Balance: ₹{yearNet.toLocaleString()})</span>
+                      </summary>
+                      <div style={{ marginTop: '1rem', marginLeft: '1rem' }}>
+                        {sortedMonths.map(month => renderMonth(month, false))}
+                      </div>
+                    </details>
+                  );
+                }
+              })}
+              {transactions.length === 0 && (
+                <div className="text-center" style={{ padding: '2rem' }}>No transactions found.</div>
+              )}
             </div>
           </div>
         </>
