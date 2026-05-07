@@ -59,6 +59,13 @@ p {
   border-radius: 16px;
   box-shadow: var(--glass-shadow);
   padding: 2rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+details {
+  max-width: 100%;
 }
 
 /* Forms & Inputs */
@@ -155,6 +162,14 @@ label {
 }
 
 /* Tables */
+.table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  display: block;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

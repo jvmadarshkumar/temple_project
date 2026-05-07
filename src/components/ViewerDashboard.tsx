@@ -86,7 +86,7 @@ export default function ViewerDashboard() {
                   <summary style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', padding: '0.5rem', outline: 'none' }}>
                     {month} <span style={{ fontSize: '0.9rem', fontWeight: 'normal', opacity: 0.8, marginLeft: '1rem' }}>(Net Balance: ₹{groupNet.toLocaleString()})</span>
                   </summary>
-                  <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
+                  <div className="table-wrapper" style={{ marginTop: '1rem' }}>
                     <table>
                       <thead>
                         <tr>
