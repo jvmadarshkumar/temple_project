@@ -86,15 +86,24 @@ export default function AdminDashboard() {
   };
 
   const handleTogglePermission = async (id: string, field: string, value: boolean) => {
+    // Optimistic UI update for instant feedback
+    setUsers(prevUsers => 
+      prevUsers.map(u => u._id === id ? { ...u, [field]: value } : u)
+    );
+
     try {
       await fetch(`/api/users/${id}/permissions`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value })
       });
-      fetchData();
+      // Do not call fetchData() here to avoid sluggish re-renders
     } catch (err) {
       console.error(err);
+      // Revert on failure
+      setUsers(prevUsers => 
+        prevUsers.map(u => u._id === id ? { ...u, [field]: !value } : u)
+      );
     }
   };
 
