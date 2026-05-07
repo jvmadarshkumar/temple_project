@@ -215,6 +215,7 @@ th {
 .justify-between { justify-content: space-between; }
 .align-center { align-items: center; }
 .gap-4 { gap: 1rem; }
+.w-full { width: 100%; }
 
 /* Responsive Grid Utilities */
 .grid-3 { grid-template-columns: repeat(3, 1fr); }

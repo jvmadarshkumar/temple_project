@@ -181,7 +181,7 @@ export default function AdminDashboard({ initialTransactions, initialUsers }: { 
           </div>
 
           <div className="glass-panel">
-            <div className="flex flex-col-mobile justify-between align-center mb-4">
+            <div className="flex flex-col-mobile justify-between align-center mb-4 w-full">
               <h3>Transactions</h3>
               <div className="flex flex-col-mobile gap-4 align-center">
                 <button className="btn btn-secondary btn-full-mobile" onClick={() => setShowExportModal(true)}>
