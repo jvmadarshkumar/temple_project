@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import TempleLogo from '@/components/TempleLogo';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -42,7 +41,7 @@ export default function LoginPage() {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <div className="glass-panel" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="text-center mb-4">
-          <TempleLogo size={48} color="var(--accent-color)" style={{ margin: '0 auto', marginBottom: '1rem' }} />
+          <img src="/ganesha-logo.png" alt="Ganesha Logo" width={80} height={80} style={{ margin: '0 auto', marginBottom: '1rem', display: 'block' }} />
           <h2>Welcome Back</h2>
           <p>Login to Temple Finance Tracker</p>
         </div>
