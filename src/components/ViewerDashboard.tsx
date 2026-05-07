@@ -116,7 +116,7 @@ export default function ViewerDashboard({ user, initialTransactions }: { user: a
       <div className="glass-panel">
         <div className="flex flex-col-mobile justify-between align-center mb-4">
           <h3>Recent Transactions</h3>
-          <div className="flex flex-col-mobile gap-4 align-center w-full" style={{ width: '100%' }}>
+          <div className="flex flex-col-mobile gap-4 align-center">
             <button className="btn btn-secondary btn-full-mobile" onClick={() => setShowExportModal(true)}>
               Download Excel
             </button>
