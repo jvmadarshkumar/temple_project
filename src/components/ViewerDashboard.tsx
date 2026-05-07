@@ -39,7 +39,7 @@ export default function ViewerDashboard() {
 
   return (
     <div className="grid">
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        <div className="grid grid-3 mb-4">
         <div className="glass-panel text-center">
           <h3>Total Income</h3>
           <h2 className="text-success">₹{totalIncome.toLocaleString()}</h2>
@@ -57,10 +57,10 @@ export default function ViewerDashboard() {
       </div>
 
       <div className="glass-panel">
-        <div className="flex justify-between align-center mb-4">
+        <div className="flex flex-col-mobile justify-between align-center mb-4">
           <h3>Recent Transactions</h3>
-          <div className="flex gap-4 align-center">
-            <button className="btn btn-primary" onClick={() => setShowExportModal(true)}>
+          <div className="flex flex-col-mobile gap-4 align-center w-full" style={{ width: '100%' }}>
+            <button className="btn btn-primary btn-full-mobile" onClick={() => setShowExportModal(true)}>
               Download Excel
             </button>
           </div>

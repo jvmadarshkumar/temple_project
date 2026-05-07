@@ -128,7 +128,7 @@ export default function AdminDashboard() {
 
       {activeTab === 'transactions' && (
         <>
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+          <div className="grid grid-3 mb-4">
             <div className="glass-panel text-center">
               <h3>Total Income</h3>
               <h2 className="text-success">₹{totalIncome.toLocaleString()}</h2>
@@ -146,13 +146,13 @@ export default function AdminDashboard() {
           </div>
 
           <div className="glass-panel">
-            <div className="flex justify-between align-center mb-4">
+            <div className="flex flex-col-mobile justify-between align-center mb-4">
               <h3>Transactions</h3>
-              <div className="flex gap-4 align-center">
-                <button className="btn btn-secondary" onClick={() => setShowExportModal(true)}>
+              <div className="flex flex-col-mobile gap-4 align-center w-full" style={{ width: '100%' }}>
+                <button className="btn btn-secondary btn-full-mobile" onClick={() => setShowExportModal(true)}>
                   Export Excel
                 </button>
-                <button className="btn btn-primary" onClick={() => setShowAddModal(!showAddModal)}>
+                <button className="btn btn-primary btn-full-mobile" onClick={() => setShowAddModal(!showAddModal)}>
                   {showAddModal ? 'Cancel' : '+ Add Transaction'}
                 </button>
               </div>
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
 
             {showAddModal && (
               <form onSubmit={handleAddTransaction} className="mb-4" style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
-                <div className="grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                <div className="grid grid-3">
                   <div>
                     <label>Type</label>
                     <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
                     <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
                   </div>
                 </div>
-                <div className="grid" style={{ gridTemplateColumns: '1fr 2fr' }}>
+                <div className="grid grid-2 mt-4" style={{ gridTemplateColumns: '2fr 1fr' }}>
                   <div>
                     <label>Category</label>
                     <input type="text" required placeholder="e.g. Donation, Maintenance" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} />

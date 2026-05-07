@@ -60,7 +60,7 @@ export default function ExportModal({ transactions, onClose }: { transactions: a
       <div className="glass-panel" style={{ width: '100%', maxWidth: '400px' }}>
         <h3 className="mb-4">Export Transactions</h3>
         
-        <div className="grid gap-4 mb-4" style={{ gridTemplateColumns: '1fr' }}>
+        <div className="grid grid-1 gap-4 mb-4">
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem' }}>Date Range</label>
             <select value={option} onChange={e => setOption(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px' }}>
@@ -74,7 +74,7 @@ export default function ExportModal({ transactions, onClose }: { transactions: a
           </div>
 
           {option === 'custom' && (
-            <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="grid grid-2 gap-4">
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem' }}>From</label>
                 <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', background: 'white', color: 'black' }} />
@@ -87,9 +87,9 @@ export default function ExportModal({ transactions, onClose }: { transactions: a
           )}
         </div>
 
-        <div className="flex justify-between mt-4">
-          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleExport}>Download Excel</button>
+        <div className="flex flex-col-mobile justify-between mt-4">
+          <button className="btn btn-secondary btn-full-mobile" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary btn-full-mobile" onClick={handleExport}>Download Excel</button>
         </div>
       </div>
     </div>
