@@ -181,9 +181,9 @@ export default function AdminDashboard({ initialTransactions, initialUsers }: { 
           </div>
 
           <div className="glass-panel">
-            <div className="flex flex-col-mobile justify-between align-center mb-4 w-full">
-              <h3>Transactions</h3>
-              <div className="flex flex-col-mobile gap-4 align-center">
+            <div className="flex flex-col-mobile justify-between align-center mb-4 w-full" style={{ gap: '1rem' }}>
+              <h3 style={{ whiteSpace: 'nowrap', flexShrink: 0, margin: 0 }}>Transactions</h3>
+              <div className="flex flex-wrap gap-4 align-center" style={{ flexShrink: 0 }}>
                 <button className="btn btn-secondary btn-full-mobile" onClick={() => setShowExportModal(true)}>
                   Export Excel
                 </button>

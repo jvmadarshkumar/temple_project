@@ -9,7 +9,7 @@ import User from '@/models/User';
 import Transaction from '@/models/Transaction';
 
 export default async function DashboardPage() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
 
   if (!token) {
