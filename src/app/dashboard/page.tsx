@@ -39,7 +39,7 @@ export default async function DashboardPage() {
     .lean();
 
   // If admin, fetch users
-  let initialUsers = [];
+  let initialUsers: any[] = [];
   if (user.role === 'admin') {
     initialUsers = await User.find({}).sort({ createdAt: -1 }).lean();
   }
