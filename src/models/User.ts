@@ -5,8 +5,10 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phoneNumber: { type: String, required: true },
   role: { type: String, enum: ['admin', 'viewer'], default: 'viewer' },
-  status: { type: String, enum: ['pending', 'approved'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   password: { type: String }, // Plain text as requested by admin
+  isDisabled: { type: Boolean, default: false },
+  canAddTransactions: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 

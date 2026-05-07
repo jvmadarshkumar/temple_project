@@ -5,8 +5,8 @@ import User from '@/models/User';
 
 export async function POST(request: Request) {
   try {
-    const { email, otp, name, phoneNumber } = await request.json();
-    if (!email || !otp || !name || !phoneNumber) {
+    const { email, otp, name, phoneNumber, password } = await request.json();
+    if (!email || !otp || !name || !phoneNumber || !password) {
       return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
     }
 
@@ -29,6 +29,7 @@ export async function POST(request: Request) {
       name,
       email,
       phoneNumber,
+      password,
       role: 'viewer', // default role
       status: 'pending' // waits for admin approval
     });

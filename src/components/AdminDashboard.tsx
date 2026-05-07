@@ -72,15 +72,25 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleApproveUser = async (id: string) => {
-    const password = prompt('Enter a fixed password for this user to login:');
-    if (!password) return;
-
+  const handleUpdateStatus = async (id: string, status: string) => {
     try {
-      await fetch(`/api/users/${id}/approve`, {
+      await fetch(`/api/users/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ status })
+      });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleTogglePermission = async (id: string, field: string, value: boolean) => {
+    try {
+      await fetch(`/api/users/${id}/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value })
       });
       fetchData();
     } catch (err) {
@@ -220,6 +230,7 @@ export default function AdminDashboard() {
                               <th>Category</th>
                               <th>Description</th>
                               <th>Amount</th>
+                              <th>Added By</th>
                               <th>Actions</th>
                             </tr>
                           </thead>
@@ -237,6 +248,7 @@ export default function AdminDashboard() {
                                 <td className={`text-${t.type === 'income' ? 'success' : 'danger'}`}>
                                   ₹{t.amount.toLocaleString()}
                                 </td>
+                                <td>{t.addedBy?.name || 'System'}</td>
                                 <td>
                                   <button className="btn btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleDeleteTransaction(t._id)}>
                                     Delete
@@ -302,9 +314,14 @@ export default function AdminDashboard() {
                     <td>{u.email}</td>
                     <td>{u.phoneNumber}</td>
                     <td>
-                      <button className="btn btn-success" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleApproveUser(u._id)}>
-                        Approve & Set Password
-                      </button>
+                      <div className="flex gap-4">
+                        <button className="btn btn-success" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleUpdateStatus(u._id, 'approved')}>
+                          Approve
+                        </button>
+                        <button className="btn btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleUpdateStatus(u._id, 'rejected')}>
+                          Reject
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -318,14 +335,15 @@ export default function AdminDashboard() {
           </div>
 
           <div className="mt-4">
-            <h3>Approved Users (View Passwords)</h3>
+            <h3>Approved Users Management</h3>
             <table>
               <thead>
                 <tr>
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Assigned Password</th>
+                  <th>Password</th>
+                  <th>Permissions</th>
                 </tr>
               </thead>
               <tbody>
@@ -336,6 +354,28 @@ export default function AdminDashboard() {
                     <td>{u.role.toUpperCase()}</td>
                     <td style={{ fontFamily: 'monospace', letterSpacing: '1px', color: 'var(--accent-color)' }}>
                       {u.password || 'N/A'}
+                    </td>
+                    <td>
+                      {u.role !== 'admin' && (
+                        <div className="flex flex-col-mobile gap-4">
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={u.isDisabled || false} 
+                              onChange={(e) => handleTogglePermission(u._id, 'isDisabled', e.target.checked)} 
+                            />
+                            Disable User
+                          </label>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={u.canAddTransactions || false} 
+                              onChange={(e) => handleTogglePermission(u._id, 'canAddTransactions', e.target.checked)} 
+                            />
+                            Allow Add Tx
+                          </label>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

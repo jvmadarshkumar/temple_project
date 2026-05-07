@@ -12,7 +12,9 @@ export async function GET(request: NextRequest) {
     }
 
     await dbConnect();
-    const transactions = await Transaction.find({}).sort({ date: -1 });
+    // Also load the User model so Mongoose can resolve the ref properly in case it's not loaded
+    require('@/models/User');
+    const transactions = await Transaction.find({}).populate('addedBy', 'name email').sort({ date: -1 });
     
     return NextResponse.json({ transactions });
   } catch (error: any) {
@@ -24,8 +26,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const tokenPayload = getUserFromRequest(request);
-    if (!tokenPayload || (tokenPayload as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized. Admin access required.' }, { status: 403 });
+    if (!tokenPayload) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await dbConnect();
+    require('@/models/User');
+    const User = require('@/models/User').default;
+    const user = await User.findById((tokenPayload as any).id);
+
+    if (!user || (user.role !== 'admin' && !user.canAddTransactions)) {
+      return NextResponse.json({ error: 'Unauthorized. You do not have permission to add transactions.' }, { status: 403 });
     }
 
     const body = await request.json();

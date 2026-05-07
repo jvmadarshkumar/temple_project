@@ -4,17 +4,45 @@ import { useEffect, useState } from 'react';
 import ExportModal from './ExportModal';
 import { downloadTransactionsAsExcel } from '@/lib/export';
 
-export default function ViewerDashboard() {
+export default function ViewerDashboard({ user }: { user: any }) {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({
+    type: 'income',
+    amount: '',
+    category: '',
+    date: new Date().toISOString().split('T')[0],
+    description: ''
+  });
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/transactions')
       .then((res) => res.json())
       .then((data) => setTransactions(data.transactions || []))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
+
+  const handleAddTransaction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      setShowAddModal(false);
+      fetchData();
+      setFormData({ ...formData, amount: '', description: '' });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
   const totalExpense = transactions.filter(t => t.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
@@ -36,6 +64,16 @@ export default function ViewerDashboard() {
   const sortMonths = (a: string, b: string) => monthNames.indexOf(b) - monthNames.indexOf(a);
 
   if (loading) return <div>Loading data...</div>;
+
+  if (user?.isDisabled) {
+    return (
+      <div className="glass-panel text-center" style={{ marginTop: '2rem', padding: '4rem 2rem' }}>
+        <h2 className="text-danger mb-4">Account Access Restricted</h2>
+        <p>Your account has been disabled by the administrator.</p>
+        <p>You no longer have permission to view financial transactions. Please contact the administrator for assistance.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid">
@@ -60,14 +98,52 @@ export default function ViewerDashboard() {
         <div className="flex flex-col-mobile justify-between align-center mb-4">
           <h3>Recent Transactions</h3>
           <div className="flex flex-col-mobile gap-4 align-center w-full" style={{ width: '100%' }}>
-            <button className="btn btn-primary btn-full-mobile" onClick={() => setShowExportModal(true)}>
+            <button className="btn btn-secondary btn-full-mobile" onClick={() => setShowExportModal(true)}>
               Download Excel
             </button>
+            {user?.canAddTransactions && (
+              <button className="btn btn-primary btn-full-mobile" onClick={() => setShowAddModal(!showAddModal)}>
+                {showAddModal ? 'Cancel' : '+ Add Transaction'}
+              </button>
+            )}
           </div>
         </div>
 
         {showExportModal && (
           <ExportModal transactions={transactions} onClose={() => setShowExportModal(false)} />
+        )}
+
+        {showAddModal && user?.canAddTransactions && (
+          <form onSubmit={handleAddTransaction} className="mb-4" style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+            <div className="grid grid-3">
+              <div>
+                <label>Type</label>
+                <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+                  <option value="income">Income</option>
+                  <option value="expense">Expense</option>
+                </select>
+              </div>
+              <div>
+                <label>Amount (₹)</label>
+                <input type="number" required min="1" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} />
+              </div>
+              <div>
+                <label>Date</label>
+                <input type="date" required value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+              </div>
+            </div>
+            <div className="grid grid-2 mt-4" style={{ gridTemplateColumns: '2fr 1fr' }}>
+              <div>
+                <label>Category</label>
+                <input type="text" required placeholder="e.g. Donation, Maintenance" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} />
+              </div>
+              <div>
+                <label>Description (Optional)</label>
+                <input type="text" placeholder="Additional details..." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+              </div>
+            </div>
+            <button type="submit" className="btn btn-success mt-4">Save Transaction</button>
+          </form>
         )}
         
         <div>

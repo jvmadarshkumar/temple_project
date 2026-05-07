@@ -6,7 +6,7 @@ import { CheckCircle } from 'lucide-react';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({ name: '', email: '', phoneNumber: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phoneNumber: '', password: '', confirmPassword: '' });
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,6 +16,12 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch('/api/auth/send-otp', {
@@ -105,6 +111,20 @@ export default function RegisterPage() {
               <input 
                 type="tel" required 
                 value={formData.phoneNumber} onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})} 
+              />
+            </div>
+            <div className="mb-4">
+              <label>Password</label>
+              <input 
+                type="password" required minLength={6}
+                value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} 
+              />
+            </div>
+            <div className="mb-4">
+              <label>Confirm Password</label>
+              <input 
+                type="password" required minLength={6}
+                value={formData.confirmPassword} onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})} 
               />
             </div>
             <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>

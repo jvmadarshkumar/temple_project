@@ -48,7 +48,7 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      {user.role === 'admin' ? <AdminDashboard /> : <ViewerDashboard />}
+      {user.role === 'admin' ? <AdminDashboard /> : <ViewerDashboard user={user} />}
     </div>
   );
 }
