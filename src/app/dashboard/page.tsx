@@ -38,7 +38,10 @@ export default function DashboardPage() {
   return (
     <div style={{ paddingTop: '2rem' }}>
       <div className="glass-panel mb-4 flex justify-between align-center">
-        <h2>Temple Finance Tracker</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <img src="/ganesha-logo.png" alt="Ganesha Logo" width={40} height={40} />
+          <h2 style={{ margin: 0 }}>Temple Finance Tracker</h2>
+        </div>
         <div className="flex align-center gap-4">
           <span>Welcome, {user.name} ({user.role})</span>
           <button className="btn btn-secondary" onClick={handleLogout}>Logout</button>
