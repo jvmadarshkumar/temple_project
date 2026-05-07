@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import ExportModal from './ExportModal';
 import { downloadTransactionsAsExcel } from '@/lib/export';
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ initialTransactions, initialUsers }: { initialTransactions: any[], initialUsers: any[] }) {
   const [activeTab, setActiveTab] = useState<'transactions' | 'users'>('transactions');
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState<any[]>(initialTransactions || []);
+  const [users, setUsers] = useState<any[]>(initialUsers || []);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1); // Set to >1 if we know from SSR, but for now we'll fetch to find out, or assume 1 until we load more. Let's assume initial load is page 1.
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Export filters
   const [showExportModal, setShowExportModal] = useState(false);
@@ -23,28 +25,40 @@ export default function AdminDashboard() {
     description: ''
   });
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchTransactions = async (pageNum: number) => {
     try {
-      const [txRes, usersRes] = await Promise.all([
-        fetch('/api/transactions'),
-        fetch('/api/users')
-      ]);
-      const txData = await txRes.json();
-      const usersData = await usersRes.json();
+      setLoadingMore(true);
+      const res = await fetch(`/api/transactions?page=${pageNum}&limit=50`);
+      const data = await res.json();
       
-      setTransactions(txData.transactions || []);
-      setUsers(usersData.users || []);
+      if (pageNum === 1) {
+        setTransactions(data.transactions || []);
+      } else {
+        setTransactions(prev => [...prev, ...(data.transactions || [])]);
+      }
+      setTotalPages(data.totalPages || 1);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch('/api/users');
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchTransactions(nextPage);
+  };
 
   const handleAddTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +69,8 @@ export default function AdminDashboard() {
         body: JSON.stringify(formData)
       });
       setShowAddModal(false);
-      fetchData();
+      setPage(1);
+      fetchTransactions(1);
       setFormData({ ...formData, amount: '', description: '' });
     } catch (err) {
       console.error(err);
@@ -66,7 +81,8 @@ export default function AdminDashboard() {
     if (!confirm('Are you sure you want to delete this transaction?')) return;
     try {
       await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
-      fetchData();
+      setPage(1);
+      fetchTransactions(1);
     } catch (err) {
       console.error(err);
     }
@@ -79,7 +95,7 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
       });
-      fetchData();
+      fetchUsers();
     } catch (err) {
       console.error(err);
     }
@@ -126,7 +142,7 @@ export default function AdminDashboard() {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const sortMonths = (a: string, b: string) => monthNames.indexOf(b) - monthNames.indexOf(a);
 
-  if (loading && transactions.length === 0) return <div>Loading Admin Dashboard...</div>;
+  // No loading screen needed anymore due to SSR
 
   return (
     <div className="grid">
@@ -297,6 +313,13 @@ export default function AdminDashboard() {
               })}
               {transactions.length === 0 && (
                 <div className="text-center" style={{ padding: '2rem' }}>No transactions found.</div>
+              )}
+              {page < totalPages && transactions.length > 0 && (
+                <div className="text-center mt-4 mb-4">
+                  <button className="btn btn-secondary" onClick={handleLoadMore} disabled={loadingMore}>
+                    {loadingMore ? 'Loading...' : 'Load More'}
+                  </button>
+                </div>
               )}
             </div>
           </div>

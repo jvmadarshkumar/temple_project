@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
+import Image from 'next/image';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
@@ -83,7 +84,7 @@ export default function RegisterPage() {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <div className="glass-panel" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="text-center mb-4">
-          <img src="/ganesha-logo.png" alt="Ganesha Logo" width={80} height={80} style={{ margin: '0 auto', marginBottom: '1rem', display: 'block' }} />
+          <Image src="/ganesha-logo.png" alt="Ganesha Logo" width={80} height={80} style={{ margin: '0 auto', marginBottom: '1rem', display: 'block' }} priority />
           <h2>Request Access</h2>
           <p>Register for Temple Finance Tracker</p>
         </div>

@@ -1,54 +1,74 @@
-"use client";
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import Image from 'next/image';
 import AdminDashboard from '@/components/AdminDashboard';
 import ViewerDashboard from '@/components/ViewerDashboard';
+import { verifyToken } from '@/lib/auth';
+import dbConnect from '@/lib/mongodb';
+import User from '@/models/User';
+import Transaction from '@/models/Transaction';
 
-export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+export default async function DashboardPage() {
+  const cookieStore = cookies();
+  const token = cookieStore.get('token')?.value;
 
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => {
-        if (!res.ok) throw new Error('Not logged in');
-        return res.json();
-      })
-      .then((data) => {
-        setUser(data.user);
-      })
-      .catch(() => {
-        router.push('/');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [router]);
+  if (!token) {
+    redirect('/');
+  }
 
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading Dashboard...</div>;
-  if (!user) return null;
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    redirect('/');
+  }
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/');
-  };
+  await dbConnect();
+  const user = await User.findById((decoded as any).id).lean();
+  
+  if (!user) {
+    redirect('/');
+  }
+
+  // Pre-fetch data for SSR
+  require('@/models/User'); // Ensure refs
+  
+  // Fetch first 50 transactions
+  const initialTransactions = await Transaction.find({})
+    .populate('addedBy', 'name email')
+    .sort({ date: -1 })
+    .limit(50)
+    .lean();
+
+  // If admin, fetch users
+  let initialUsers = [];
+  if (user.role === 'admin') {
+    initialUsers = await User.find({}).sort({ createdAt: -1 }).lean();
+  }
+
+  // Serialize MongoDB documents to pass as props to Client Components
+  const serializedUser = JSON.parse(JSON.stringify(user));
+  const serializedTx = JSON.parse(JSON.stringify(initialTransactions));
+  const serializedUsers = JSON.parse(JSON.stringify(initialUsers));
 
   return (
     <div style={{ paddingTop: '2rem' }}>
       <div className="glass-panel mb-4 flex flex-col-mobile justify-between align-center">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }} className="mobile-text-center">
-          <img src="/ganesha-logo.png" alt="Ganesha Logo" className="logo-img" />
+          <Image src="/ganesha-logo.png" alt="Ganesha Logo" width={80} height={80} className="logo-img" priority />
           <h2 style={{ margin: 0 }}>Temple Finance Tracker</h2>
         </div>
         <div className="flex flex-col-mobile align-center gap-4 mobile-text-center">
-          <span>Welcome, {user.name} ({user.role})</span>
-          <button className="btn btn-secondary btn-full-mobile" onClick={handleLogout}>Logout</button>
+          <span>Welcome, {serializedUser.name} ({serializedUser.role})</span>
+          <form action="/api/auth/logout" method="POST">
+            <button type="submit" className="btn btn-secondary btn-full-mobile">Logout</button>
+          </form>
         </div>
       </div>
       
-      {user.role === 'admin' ? <AdminDashboard /> : <ViewerDashboard user={user} />}
+      {serializedUser.role === 'admin' ? (
+        <AdminDashboard initialTransactions={serializedTx} initialUsers={serializedUsers} />
+      ) : (
+        <ViewerDashboard user={serializedUser} initialTransactions={serializedTx} />
+      )}
     </div>
   );
 }

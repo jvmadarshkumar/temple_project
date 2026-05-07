@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import ExportModal from './ExportModal';
 import { downloadTransactionsAsExcel } from '@/lib/export';
 
-export default function ViewerDashboard({ user }: { user: any }) {
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function ViewerDashboard({ user, initialTransactions }: { user: any, initialTransactions: any[] }) {
+  const [transactions, setTransactions] = useState<any[]>(initialTransactions || []);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -17,16 +19,32 @@ export default function ViewerDashboard({ user }: { user: any }) {
     description: ''
   });
 
-  const fetchData = () => {
-    fetch('/api/transactions')
-      .then((res) => res.json())
-      .then((data) => setTransactions(data.transactions || []))
-      .finally(() => setLoading(false));
+  const fetchTransactions = async (pageNum: number) => {
+    try {
+      setLoadingMore(true);
+      const res = await fetch(`/api/transactions?page=${pageNum}&limit=50`);
+      const data = await res.json();
+      
+      if (pageNum === 1) {
+        setTransactions(data.transactions || []);
+      } else {
+        setTransactions(prev => [...prev, ...(data.transactions || [])]);
+      }
+      setTotalPages(data.totalPages || 1);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchTransactions(nextPage);
+  };
+
+  // No initial fetch needed due to SSR
 
   const handleAddTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +55,8 @@ export default function ViewerDashboard({ user }: { user: any }) {
         body: JSON.stringify(formData)
       });
       setShowAddModal(false);
-      fetchData();
+      setPage(1);
+      fetchTransactions(1);
       setFormData({ ...formData, amount: '', description: '' });
     } catch (err) {
       console.error(err);
@@ -63,7 +82,7 @@ export default function ViewerDashboard({ user }: { user: any }) {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const sortMonths = (a: string, b: string) => monthNames.indexOf(b) - monthNames.indexOf(a);
 
-  if (loading) return <div>Loading data...</div>;
+  // No loading screen needed anymore due to SSR
 
   if (user?.isDisabled) {
     return (
@@ -221,6 +240,13 @@ export default function ViewerDashboard({ user }: { user: any }) {
           })}
           {transactions.length === 0 && (
             <div className="text-center" style={{ padding: '2rem' }}>No transactions found.</div>
+          )}
+          {page < totalPages && transactions.length > 0 && (
+            <div className="text-center mt-4 mb-4">
+              <button className="btn btn-secondary" onClick={handleLoadMore} disabled={loadingMore}>
+                {loadingMore ? 'Loading...' : 'Load More'}
+              </button>
+            </div>
           )}
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -41,7 +42,7 @@ export default function LoginPage() {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
       <div className="glass-panel" style={{ maxWidth: '400px', width: '100%' }}>
         <div className="text-center mb-4">
-          <img src="/ganesha-logo.png" alt="Ganesha Logo" width={80} height={80} style={{ margin: '0 auto', marginBottom: '1rem', display: 'block' }} />
+          <Image src="/ganesha-logo.png" alt="Ganesha Logo" width={80} height={80} style={{ margin: '0 auto', marginBottom: '1rem', display: 'block' }} priority />
           <h2>Welcome Back</h2>
           <p>Login to Temple Finance Tracker</p>
         </div>

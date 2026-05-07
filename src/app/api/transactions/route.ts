@@ -11,12 +11,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const skip = (page - 1) * limit;
+
     await dbConnect();
     // Also load the User model so Mongoose can resolve the ref properly in case it's not loaded
     require('@/models/User');
-    const transactions = await Transaction.find({}).populate('addedBy', 'name email').sort({ date: -1 });
+    const transactions = await Transaction.find({})
+      .populate('addedBy', 'name email')
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
     
-    return NextResponse.json({ transactions });
+    const total = await Transaction.countDocuments();
+    
+    return NextResponse.json({ 
+      transactions, 
+      total, 
+      page, 
+      totalPages: Math.ceil(total / limit) 
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

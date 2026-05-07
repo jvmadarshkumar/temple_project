@@ -10,4 +10,6 @@ const TransactionSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+TransactionSchema.index({ date: -1 });
+
 export default mongoose.models.Transaction || mongoose.model('Transaction', TransactionSchema);
