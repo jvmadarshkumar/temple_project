@@ -3,9 +3,16 @@ import dbConnect from '@/lib/mongodb';
 import Otp from '@/models/Otp';
 import User from '@/models/User';
 import { sendOtpEmail } from '@/lib/email';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const isAllowed = rateLimit(`otp_${ip}`, 5, 60 * 1000); // 5 requests per minute
+    if (!isAllowed) {
+      return NextResponse.json({ error: 'Too many OTP requests. Please try again later.' }, { status: 429 });
+    }
+
     const { email } = await request.json();
     if (!email) return NextResponse.json({ error: 'Email is required' }, { status: 400 });
 
